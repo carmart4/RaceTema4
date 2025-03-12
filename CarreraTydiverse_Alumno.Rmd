@@ -302,51 +302,61 @@ head(top_counts_sorted)
 24. En lugar de utilizar el recuento de descargas, es más lógico considerar el número de ordenadores distintos en los que se han descargado las librerías, para ello utilizaríamos la columna `unique` que cuenta solo una descarga por ordenador, independientemente del número de veces que se descarge una librería. Repite los cálculos considerando esta variable y almacena el resultado en `top_unique_sorted`.
 
 ```{r}
-
-
-
-
-
-
-
+top_unique_sorted <- cran %>%
+  group_by(package) %>%
+  summarise(unique = n_distinct(ip_id)) %>%
+  arrange(desc(unique))
+head(top_unique_sorted)
 
 ```
 25. Completa lo que se indica  usando `pipes`. Selecciona las columnas `ip_id, country, package, size` de `cran` y muestra el resultado por pantalla usando `print`. No es necesario almacenar.
 
 ```{r}
-
-
+print(cran %>%
+  select(ip_id, country, package, size) %>%
+    head())
 
 ```
 
 26. Añade una columna llamada `size_mb` que contenga el tamaño de cada descarga en megabytes.
 
 ```{r}
-
-
+cran %>%
+  select(ip_id, country, package, size) %>%
+  mutate(size_mb = size/2^{20}) %>%
+  head()
 
 ```
 
 27. Selecciona aquellas descargas cuyo tamaño es menor o igual que 0.5 Mbytes
 ```{r}
-
-
+cran %>%
+  select(ip_id, country, package, size) %>%
+  mutate(size_mb = size/2^{20}) %>%
+  filter(size_mb <= 0.5) %>%
+  head()
 
 ```
 28. Repite el apartado anterior ordenando los resultados, en orden descendente según el tamaño en Megabytes y muéstralo por pantalla.
 ```{r}
-
-
-
+print(cran %>%
+  select(ip_id, country, package, size) %>%
+  mutate(size_mb = size/2^{20}) %>%
+  filter(size_mb <= 0.5) %>%
+  arrange(desc(size_mb)) %>%
+  head())
 
 ```
 **EXTRA**. Se desea mostar gráficamente aquellos países que suponen el mayor tráfico de información, ocasionado por el total de descargas acumuladas. Para facilitar la visualización céntrate en aquellos que están por encima del 90 % del top de descargas. El gráfico debe mostrar los valores de forma ordenada de mayor a menor. En el eje X debe aparecer el código de país y en el eje Y el tráfico generado. Intenta hacerlo usando una tubería sin emplear ninguna variable auxiliar.
 `cran%>%...+geom_point()`
 
 ```{r}
-
-
-
+cran %>%
+  select(ip_id, country, package, size) %>%
+  mutate(size_mb = size/2^{20}) %>%
+  filter(size_mb <= 0.5) %>%
+  arrange(desc(size_mb)) %>%
+  head() 
 
 ```
 **EXTRA** Tal como se indica en el ejercicio, el significado de los códigos usados para la codificación de los paise se pueden obtener de https://dev.maxmind.com/geoip/geoip2/geolite2/. Descarga el fichero **GeoLite2 Country** en formato CSV. Este fichero contiene información en varios idiomas. Usa `GeoLite2-Country-Locations-es.csv` que tiene la información en español. Deseamos poder determinar las descargas por continentes por lo que necesitamos añadir esta información a los datos de las descargas almacenados en `cran`. Procede de la siguiente forma:
