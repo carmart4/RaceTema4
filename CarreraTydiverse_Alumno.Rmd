@@ -357,7 +357,9 @@ cran %>%
   summarise(total_acum = sum(size)) %>%
   filter(total_acum > quantile(total_acum, probs = 0.9)) %>% 
   arrange(desc(total_acum)) %>%
-  ggplot(aes(x=country, y=total_acum, fill=country)) + geom_col()
+  mutate(country = factor(country, levels = country)) %>%  # Convertir a factor y ordenar por el total_acum
+  ggplot(aes(x = country, y = total_acum, fill = country)) +
+  geom_col()
 
 ```
 **EXTRA** Tal como se indica en el ejercicio, el significado de los códigos usados para la codificación de los paise se pueden obtener de https://dev.maxmind.com/geoip/geoip2/geolite2/. Descarga el fichero **GeoLite2 Country** en formato CSV. Este fichero contiene información en varios idiomas. Usa `GeoLite2-Country-Locations-es.csv` que tiene la información en español. Deseamos poder determinar las descargas por continentes por lo que necesitamos añadir esta información a los datos de las descargas almacenados en `cran`. Procede de la siguiente forma:
@@ -370,6 +372,28 @@ cran %>%
  + Representa un diagrama de barras con el flujo de datos, por continente, ordenados de mayor a menor. Expresa el flujo de datos en Terabytes (1Tb=2^40bytes)
  
 ```{r}
+namef <- './data/GeoLite2-Country-Locations-es.csv'
+code_paises <- read.csv(file = namef)
+
+codigos <- code_paises %>%
+  filter(!is.na(country_iso_code)) %>% 
+  select(continent_code, country=country_iso_code)
+
+cran <- cran %>%
+  filter(!is.na(country)) %>%
+  left_join(y=codigos, by='country')
+
+cran %>%
+  select(size, continent_code.x) %>%
+  group_by(Continente=continent_code.x) %>%
+  summarise(Flujo = sum(size / 2^40)) %>%
+  arrange(desc(Flujo)) %>% # Primero se debe orgainzar y luego hacer el factor, para que funcione el grafico. 
+  mutate(Continente = factor(Continente, levels=Continente)) %>%
+  ggplot(aes(x=Continente, y=Flujo, fill=Continente)) +
+  geom_col() +
+  labs(title='Flujo de datos por continente', 
+    y='Flujo en TB')
+  
 
 ```
 
